@@ -195,7 +195,7 @@ export default function SonhoDoceApp() {
             <div className="mx-auto w-32 h-24 flex items-center justify-center mb-4">
               <img src={getAssetPath('/logo.jpg')} alt="Logo Sonho Doce" className="h- w-auto object-contain rounded-lg border-2" />
             </div>
-            <p className="text-orange-100 mt-6">Sistema de Gestão</p>
+            <p className="text-orange-100 mt-6 text-lg">Sistema de Gestão</p>
           </div>
           
           <form onSubmit={handleLogin} className="p-8 space-y-6">
