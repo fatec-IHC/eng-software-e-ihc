@@ -88,6 +88,10 @@ Sistema completo de ponto de venda (PDV) e gestão desenvolvido com Next.js 16, 
    
    Abra [http://localhost:3000](http://localhost:3000) no navegador
 
+## 🚀 Deploy no GitHub Pages
+
+Este projeto está configurado para deploy automático no GitHub Pages. Veja a seção de deploy no README ou consulte a documentação de GitHub Pages para mais detalhes.
+
 ## 🔐 Login
 
 Por padrão, o sistema usa autenticação simples:

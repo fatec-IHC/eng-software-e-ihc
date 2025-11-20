@@ -4,24 +4,25 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingBasket, Plus, Minus, Trash2, User, LogOut, Search, Settings, ChefHat, AlertCircle, CheckCircle, Edit2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { productSchema, type ProductFormData } from '@/lib/validations';
+import { getAssetPath } from '@/lib/utils/paths';
 
-type Product = { 
-  id: string; 
-  name: string; 
-  price: number; 
-  category: string; 
-  stock: number; 
-  image: string 
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  stock: number;
+  image: string
 };
 
 type CartItem = Product & { qty: number };
 
-type Sale = { 
-  id: string; 
-  total: number; 
-  items: CartItem[]; 
-  created_at: string; 
-  payment_method: string 
+type Sale = {
+  id: string;
+  total: number;
+  items: CartItem[];
+  created_at: string;
+  payment_method: string
 };
 
 type User = { role: 'gerente' | 'atendente'; name: string };
@@ -36,11 +37,11 @@ const Card = ({ children, className = "" }: { children: React.ReactNode; classNa
   </div>
 );
 
-const Button = ({ children, onClick, variant = 'primary', className = "", disabled = false, type = 'button' }: { 
-  children: React.ReactNode; 
-  onClick?: () => void; 
-  variant?: 'primary' | 'secondary' | 'danger' | 'success'; 
-  className?: string; 
+const Button = ({ children, onClick, variant = 'primary', className = "", disabled = false, type = 'button' }: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: 'primary' | 'secondary' | 'danger' | 'success';
+  className?: string;
   disabled?: boolean;
   type?: 'button' | 'submit';
 }) => {
@@ -50,9 +51,9 @@ const Button = ({ children, onClick, variant = 'primary', className = "", disabl
     danger: "bg-red-50 text-red-600 hover:bg-red-100",
     success: "bg-green-600 hover:bg-green-700 text-white"
   };
-  
+
   return (
-    <button 
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled}
@@ -67,7 +68,7 @@ const Button = ({ children, onClick, variant = 'primary', className = "", disabl
 
 export default function SonhoDoceApp() {
   const supabase = createClient();
-  
+
   // Estado Global
   const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -88,7 +89,7 @@ export default function SonhoDoceApp() {
         .from('products')
         .select('*')
         .order('name');
-      
+
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
@@ -116,9 +117,9 @@ export default function SonhoDoceApp() {
           )
         `)
         .order('created_at', { ascending: false });
-      
+
       if (salesError) throw salesError;
-      
+
       interface SaleItemData {
         id: string;
         product_name: string;
@@ -149,7 +150,7 @@ export default function SonhoDoceApp() {
           image: ''
         }))
       }));
-      
+
       setSalesHistory(formattedSales);
     } catch (error) {
       console.error('Error loading sales:', error);
@@ -192,12 +193,11 @@ export default function SonhoDoceApp() {
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-orange-600 p-8 text-center">
             <div className="mx-auto w-32 h-24 flex items-center justify-center mb-4">
-              <img src="/logo.jpg" alt="Logo Sonho Doce" className="h- w-auto object-contain rounded-lg border-2" />
+              <img src={getAssetPath('/logo.jpg')} alt="Logo Sonho Doce" className="h- w-auto object-contain rounded-lg border-2" />
             </div>
-            <h1 className="text-2xl font-bold text-white"></h1>
-            <p className="text-orange-100">Sistema de Gestão</p>
+            <p className="text-orange-100 mt-6 text-lg">Sistema de Gestão</p>
           </div>
-          
+
           <form onSubmit={handleLogin} className="p-8 space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Selecione o Perfil</label>
@@ -266,7 +266,7 @@ export default function SonhoDoceApp() {
       setCart((prev: CartItem[]) => {
         const existing = prev.find((item: CartItem) => item.id === product.id);
         if (existing) {
-          return prev.map((item: CartItem) => 
+          return prev.map((item: CartItem) =>
             item.id === product.id ? { ...item, qty: item.qty + 1 } : item
           );
         }
@@ -350,7 +350,7 @@ export default function SonhoDoceApp() {
         // Reload data
         await loadProducts();
         await loadSales();
-        
+
         setCart([]);
         setDiscountApplied(0);
         setPaymentModalOpen(false);
@@ -379,9 +379,9 @@ export default function SonhoDoceApp() {
           <Card className="p-4 flex gap-4 items-center flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input 
-                type="text" 
-                placeholder="Buscar produto..." 
+              <input
+                type="text"
+                placeholder="Buscar produto..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-orange-500"
                 value={searchTerm}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
@@ -392,11 +392,10 @@ export default function SonhoDoceApp() {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                    selectedCategory === cat 
-                      ? 'bg-orange-600 text-white' 
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === cat
+                      ? 'bg-orange-600 text-white'
                       : 'bg-white text-gray-600 hover:bg-orange-50'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>
@@ -490,9 +489,9 @@ export default function SonhoDoceApp() {
 
             {/* Input de Desconto */}
             <div className="flex gap-2">
-              <input 
-                type="password" 
-                placeholder="Senha Gerente (1234)" 
+              <input
+                type="password"
+                placeholder="Senha Gerente (1234)"
                 className="flex-1 px-3 py-2 text-sm border rounded-lg"
                 value={discountCode}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDiscountCode(e.target.value)}
@@ -502,8 +501,8 @@ export default function SonhoDoceApp() {
               </button>
             </div>
 
-            <Button 
-              variant="success" 
+            <Button
+              variant="success"
               className="w-full py-3 text-lg flex items-center justify-center gap-2"
               disabled={cart.length === 0}
               onClick={() => setPaymentModalOpen(true)}
@@ -523,27 +522,24 @@ export default function SonhoDoceApp() {
                 Total a pagar: <strong className="text-3xl text-orange-600 block mt-2">{formatMoney(total)}</strong>
               </p>
               <div className="grid grid-cols-2 gap-3 mb-6">
-                <button 
+                <button
                   onClick={() => setSelectedPaymentMethod('Cartão')}
-                  className={`p-4 border rounded-xl transition-colors flex flex-col items-center gap-2 ${
-                    selectedPaymentMethod === 'Cartão' ? 'border-orange-500 bg-orange-50' : 'hover:bg-orange-50 hover:border-orange-500'
-                  }`}
+                  className={`p-4 border rounded-xl transition-colors flex flex-col items-center gap-2 ${selectedPaymentMethod === 'Cartão' ? 'border-orange-500 bg-orange-50' : 'hover:bg-orange-50 hover:border-orange-500'
+                    }`}
                 >
                   <span className="text-2xl">💳</span> Cartão
                 </button>
-                <button 
+                <button
                   onClick={() => setSelectedPaymentMethod('Dinheiro')}
-                  className={`p-4 border rounded-xl transition-colors flex flex-col items-center gap-2 ${
-                    selectedPaymentMethod === 'Dinheiro' ? 'border-orange-500 bg-orange-50' : 'hover:bg-orange-50 hover:border-orange-500'
-                  }`}
+                  className={`p-4 border rounded-xl transition-colors flex flex-col items-center gap-2 ${selectedPaymentMethod === 'Dinheiro' ? 'border-orange-500 bg-orange-50' : 'hover:bg-orange-50 hover:border-orange-500'
+                    }`}
                 >
                   <span className="text-2xl">💵</span> Dinheiro
                 </button>
-                <button 
+                <button
                   onClick={() => setSelectedPaymentMethod('Pix')}
-                  className={`p-4 border rounded-xl transition-colors flex flex-col items-center gap-2 col-span-2 ${
-                    selectedPaymentMethod === 'Pix' ? 'border-orange-500 bg-orange-50' : 'hover:bg-orange-50 hover:border-orange-500'
-                  }`}
+                  className={`p-4 border rounded-xl transition-colors flex flex-col items-center gap-2 col-span-2 ${selectedPaymentMethod === 'Pix' ? 'border-orange-500 bg-orange-50' : 'hover:bg-orange-50 hover:border-orange-500'
+                    }`}
                 >
                   <span className="text-2xl">📱</span> Pix
                 </button>
@@ -575,7 +571,7 @@ export default function SonhoDoceApp() {
     const handleAddProduct = async (e: React.FormEvent) => {
       e.preventDefault();
       setFormErrors({});
-      
+
       try {
         const formData = {
           name: newProduct.name,
@@ -634,9 +630,9 @@ export default function SonhoDoceApp() {
     const handleUpdateProduct = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!editingProduct) return;
-      
+
       setFormErrors({});
-      
+
       try {
         const formData = {
           name: newProduct.name,
@@ -683,8 +679,8 @@ export default function SonhoDoceApp() {
     };
 
     const handleDelete = async (id: string) => {
-      if(!confirm('Tem certeza que deseja excluir este produto?')) return;
-      
+      if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+
       try {
         const { error } = await supabase
           .from('products')
@@ -721,13 +717,13 @@ export default function SonhoDoceApp() {
         </div>
 
         <div className="flex gap-4 mb-6">
-          <button 
+          <button
             onClick={() => setActiveTab('products')}
             className={`px-6 py-2 rounded-full font-medium transition-colors ${activeTab === 'products' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
           >
             Gerenciar Produtos
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('sales')}
             className={`px-6 py-2 rounded-full font-medium transition-colors ${activeTab === 'sales' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
           >
@@ -766,15 +762,14 @@ export default function SonhoDoceApp() {
               <form onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-                  <input 
+                  <input
                     required
-                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                      formErrors.name ? 'border-red-500' : ''
-                    }`}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${formErrors.name ? 'border-red-500' : ''
+                      }`}
                     value={newProduct.name}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setNewProduct({...newProduct, name: e.target.value});
-                      if (formErrors.name) setFormErrors({...formErrors, name: ''});
+                      setNewProduct({ ...newProduct, name: e.target.value });
+                      if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
                     }}
                   />
                   {formErrors.name && (
@@ -784,15 +779,14 @@ export default function SonhoDoceApp() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
-                    <input 
+                    <input
                       type="number" step="0.01" required
-                      className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                        formErrors.price ? 'border-red-500' : ''
-                      }`}
+                      className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${formErrors.price ? 'border-red-500' : ''
+                        }`}
                       value={newProduct.price}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        setNewProduct({...newProduct, price: e.target.value});
-                        if (formErrors.price) setFormErrors({...formErrors, price: ''});
+                        setNewProduct({ ...newProduct, price: e.target.value });
+                        if (formErrors.price) setFormErrors({ ...formErrors, price: '' });
                       }}
                     />
                     {formErrors.price && (
@@ -801,15 +795,14 @@ export default function SonhoDoceApp() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Estoque</label>
-                    <input 
+                    <input
                       type="number" required
-                      className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                        formErrors.stock ? 'border-red-500' : ''
-                      }`}
+                      className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${formErrors.stock ? 'border-red-500' : ''
+                        }`}
                       value={newProduct.stock}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        setNewProduct({...newProduct, stock: e.target.value});
-                        if (formErrors.stock) setFormErrors({...formErrors, stock: ''});
+                        setNewProduct({ ...newProduct, stock: e.target.value });
+                        if (formErrors.stock) setFormErrors({ ...formErrors, stock: '' });
                       }}
                     />
                     {formErrors.stock && (
@@ -819,14 +812,13 @@ export default function SonhoDoceApp() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                  <select 
-                    className={`w-full p-2 border rounded-lg bg-white ${
-                      formErrors.category ? 'border-red-500' : ''
-                    }`}
+                  <select
+                    className={`w-full p-2 border rounded-lg bg-white ${formErrors.category ? 'border-red-500' : ''
+                      }`}
                     value={newProduct.category}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                      setNewProduct({...newProduct, category: e.target.value as 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas'});
-                      if (formErrors.category) setFormErrors({...formErrors, category: ''});
+                      setNewProduct({ ...newProduct, category: e.target.value as 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas' });
+                      if (formErrors.category) setFormErrors({ ...formErrors, category: '' });
                     }}
                   >
                     {CATEGORIES.slice(1).map((c: string) => <option key={c}>{c}</option>)}
@@ -867,15 +859,15 @@ export default function SonhoDoceApp() {
                         </td>
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <button 
-                              onClick={() => handleEditProduct(product)} 
+                            <button
+                              onClick={() => handleEditProduct(product)}
                               className="text-blue-400 hover:text-blue-600 p-2"
                               title="Editar produto"
                             >
                               <Edit2 size={18} />
                             </button>
-                            <button 
-                              onClick={() => handleDelete(product.id)} 
+                            <button
+                              onClick={() => handleDelete(product.id)}
                               className="text-red-400 hover:text-red-600 p-2"
                               title="Excluir produto"
                             >
@@ -929,11 +921,10 @@ export default function SonhoDoceApp() {
     <div className="min-h-screen bg-gray-100 font-sans text-gray-800">
       {/* Notificação Toast */}
       {notification && (
-        <div className={`fixed top-4 right-4 z-[60] px-6 py-3 rounded-lg shadow-lg transform transition-all animate-bounce ${
-          notification.type === 'error' ? 'bg-red-500 text-white' : 
-          notification.type === 'primary' ? 'bg-blue-500 text-white' : 
-          'bg-green-500 text-white'
-        }`}>
+        <div className={`fixed top-4 right-4 z-[60] px-6 py-3 rounded-lg shadow-lg transform transition-all animate-bounce ${notification.type === 'error' ? 'bg-red-500 text-white' :
+            notification.type === 'primary' ? 'bg-blue-500 text-white' :
+              'bg-green-500 text-white'
+          }`}>
           <div className="flex items-center gap-2">
             {notification.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
             {notification.message}
@@ -949,34 +940,34 @@ export default function SonhoDoceApp() {
           <header className="bg-white border-b border-orange-100 h-20 px-6 flex items-center justify-between sticky top-0 z-40 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="bg-orange-100 p-0 rounded-lg">
-                <img src="/logo.jpg" alt="Logo Sonho Doce" className="h-15 w-auto object-contain rounded-lg" />
+                <img src={getAssetPath('/logo.jpg')} alt="Logo Sonho Doce" className="h-15 w-auto object-contain rounded-lg" />
               </div>
               <div>
                 <h1 className="font-bold text-xl text-gray-800 leading-none">Sonho Doce</h1>
                 <span className="text-xs text-gray-500 font-medium tracking-wider">SISTEMA DE GESTÃO</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-gray-800">{user?.name}</p>
                 <p className="text-xs text-orange-600 uppercase font-bold">{user?.role}</p>
               </div>
-              
+
               {user?.role === 'gerente' && (
                 <div className="bg-gray-100 p-1 rounded-lg flex text-sm font-medium">
-                  <button 
-                    onClick={() => setView('pos')} 
+                  <button
+                    onClick={() => setView('pos')}
                     className={`px-3 py-1.5 rounded-md transition-all ${view === 'pos' ? 'bg-white shadow text-orange-600' : 'text-gray-500'}`}
                   >PDV</button>
-                  <button 
-                    onClick={() => setView('admin')} 
+                  <button
+                    onClick={() => setView('admin')}
                     className={`px-3 py-1.5 rounded-md transition-all ${view === 'admin' ? 'bg-white shadow text-orange-600' : 'text-gray-500'}`}
                   >Admin</button>
                 </div>
               )}
 
-              <button 
+              <button
                 onClick={() => { setUser(null); setView('login'); setCart([]); }}
                 className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
                 title="Sair"
