@@ -194,7 +194,7 @@ export default function SonhoDoceApp() {
             <div className="mx-auto w-32 h-24 flex items-center justify-center mb-4">
               <img src="/logo.jpg" alt="Logo Sonho Doce" className="h- w-auto object-contain rounded-lg border-2" />
             </div>
-            <h1 className="text-2xl font-bold text-white">Sonho Doce</h1>
+            <h1 className="text-2xl font-bold text-white"></h1>
             <p className="text-orange-100">Sistema de Gestão</p>
           </div>
           
