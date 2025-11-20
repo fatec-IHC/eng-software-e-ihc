@@ -488,20 +488,6 @@ export default function SonhoDoceApp() {
               <span>{formatMoney(total)}</span>
             </div>
 
-            {/* Input de Desconto */}
-            <div className="flex gap-2">
-              <input 
-                type="password" 
-                placeholder="Senha Gerente (1234)" 
-                className="flex-1 px-3 py-2 text-sm border rounded-lg"
-                value={discountCode}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDiscountCode(e.target.value)}
-              />
-              <button onClick={applyDiscount} className="text-xs px-3 bg-gray-200 rounded-lg hover:bg-gray-300 font-medium text-gray-700">
-                Aplicar %
-              </button>
-            </div>
-
             <Button 
               variant="success" 
               className="w-full py-3 text-lg flex items-center justify-center gap-2"
