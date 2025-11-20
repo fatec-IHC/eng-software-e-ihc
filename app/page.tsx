@@ -1014,7 +1014,6 @@ export default function SonhoDoceApp() {
                 <img src={getAssetPath('/logo.jpg')} alt="Logo Sonho Doce" className="h-15 w-auto object-contain rounded-lg" />
               </div>
               <div>
-                <h1 className="font-bold text-xl text-gray-800 leading-none">Sonho Doce</h1>
                 <span className="text-xs text-gray-500 font-medium tracking-wider">SISTEMA DE GESTÃO</span>
               </div>
             </div>
