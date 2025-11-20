@@ -6,7 +6,6 @@ Your project is now configured for GitHub Pages deployment with:
 - ✅ Static export configuration
 - ✅ Base path setup (`/eng-software-e-ihc`)
 - ✅ GitHub Actions workflow
-- ✅ Vercel Analytics conditional loading
 - ✅ PAT token setup script
 
 ## 🎯 Quick Start (Choose One Method)
@@ -59,8 +58,7 @@ Your project is now configured for GitHub Pages deployment with:
 
 ### Files Modified:
 - `next.config.mjs` - Added static export and basePath
-- `app/layout.tsx` - Conditional Analytics loading
-- `components/analytics-wrapper.tsx` - New Analytics wrapper
+- `app/layout.tsx` - Updated for GitHub Pages
 
 ### Files Created:
 - `.github/workflows/deploy.yml` - Automated deployment

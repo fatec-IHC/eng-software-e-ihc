@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { AnalyticsWrapper } from '@/components/analytics-wrapper'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -45,7 +44,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         {children}
-        <AnalyticsWrapper />
       </body>
     </html>
   )
