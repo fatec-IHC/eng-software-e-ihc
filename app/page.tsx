@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingBasket, Plus, Minus, Trash2, User, LogOut, Search, Settings, ChefHat, AlertCircle, CheckCircle, Edit2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { productSchema, type ProductFormData } from '@/lib/validations';
+import { getAssetPath } from '@/lib/utils/paths';
 
 type Product = { 
   id: string; 
@@ -192,7 +193,7 @@ export default function SonhoDoceApp() {
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-orange-600 p-8 text-center">
             <div className="mx-auto w-32 h-24 flex items-center justify-center mb-4">
-              <img src="/logo.jpg" alt="Logo Sonho Doce" className="h- w-auto object-contain rounded-lg border-2" />
+              <img src={getAssetPath('/logo.jpg')} alt="Logo Sonho Doce" className="h- w-auto object-contain rounded-lg border-2" />
             </div>
             <h1 className="text-2xl font-bold text-white">Sonho Doce</h1>
             <p className="text-orange-100">Sistema de Gestão</p>
@@ -949,7 +950,7 @@ export default function SonhoDoceApp() {
           <header className="bg-white border-b border-orange-100 h-20 px-6 flex items-center justify-between sticky top-0 z-40 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="bg-orange-100 p-0 rounded-lg">
-                <img src="/logo.jpg" alt="Logo Sonho Doce" className="h-15 w-auto object-contain rounded-lg" />
+                <img src={getAssetPath('/logo.jpg')} alt="Logo Sonho Doce" className="h-15 w-auto object-contain rounded-lg" />
               </div>
               <div>
                 <h1 className="font-bold text-xl text-gray-800 leading-none">Sonho Doce</h1>

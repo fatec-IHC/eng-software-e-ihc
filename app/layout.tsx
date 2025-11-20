@@ -6,6 +6,13 @@ import './globals.css'
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
+// Get base path for GitHub Pages
+const basePath = process.env.GITHUB_PAGES === 'true' || process.env.NEXT_PUBLIC_GITHUB_PAGES === 'true' 
+  ? '/eng-software-e-ihc' 
+  : '';
+
+const logoPath = `${basePath}/logo.jpg`;
+
 export const metadata: Metadata = {
   title: 'Sonho Doce - Sistema de Gestão',
   description: 'Sistema de ponto de venda e gestão para padarias',
@@ -13,19 +20,19 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/logo.jpg',
+        url: logoPath,
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/logo.jpg',
+        url: logoPath,
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/logo.jpg',
+        url: logoPath,
         type: 'image/jpg',
       },
     ],
-    apple: '/logo.jpg',
+    apple: logoPath,
   },
 }
 
