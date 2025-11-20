@@ -562,6 +562,9 @@ export default function SonhoDoceApp() {
   // --- LÓGICA DO ADMIN (Gerente) ---
   const AdminScreen = () => {
     const [activeTab, setActiveTab] = useState<'products' | 'sales'>('products');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
     const [newProduct, setNewProduct] = useState<{ name: string; price: string; stock: string; category: 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas' }>({ name: '', price: '', stock: '', category: 'Pães' });
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -700,6 +703,17 @@ export default function SonhoDoceApp() {
         showNotification('Erro ao remover produto', 'error');
       }
     };
+
+    const filteredProducts = products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const paginatedProducts = filteredProducts.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+
+    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
 
     return (
       <div className="p-6 max-w-6xl mx-auto">
@@ -843,6 +857,21 @@ export default function SonhoDoceApp() {
 
             {/* Lista Produtos */}
             <Card className="lg:col-span-2 overflow-hidden">
+              <div className="p-4 border-b">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Buscar produto por nome..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-orange-500"
+                    value={searchTerm}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-gray-50 text-gray-600 border-b">
@@ -855,38 +884,80 @@ export default function SonhoDoceApp() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {products.map((product: Product) => (
-                      <tr key={product.id} className="hover:bg-gray-50">
-                        <td className="p-4 font-medium text-gray-800">{product.image} {product.name}</td>
-                        <td className="p-4 text-gray-500"><span className="bg-gray-100 px-2 py-1 rounded text-xs">{product.category}</span></td>
-                        <td className="p-4 text-gray-800 font-medium">{formatMoney(product.price)}</td>
-                        <td className="p-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${product.stock < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                            {product.stock} un
-                          </span>
-                        </td>
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button 
-                              onClick={() => handleEditProduct(product)} 
-                              className="text-blue-400 hover:text-blue-600 p-2"
-                              title="Editar produto"
-                            >
-                              <Edit2 size={18} />
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(product.id)} 
-                              className="text-red-400 hover:text-red-600 p-2"
-                              title="Excluir produto"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                    {paginatedProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-gray-400">
+                          Nenhum produto encontrado.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      paginatedProducts.map((product: Product) => (
+                        <tr key={product.id} className="hover:bg-gray-50">
+                          <td className="p-4 font-medium text-gray-800">{product.image} {product.name}</td>
+                          <td className="p-4 text-gray-500"><span className="bg-gray-100 px-2 py-1 rounded text-xs">{product.category}</span></td>
+                          <td className="p-4 text-gray-800 font-medium">{formatMoney(product.price)}</td>
+                          <td className="p-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${product.stock < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                              {product.stock} un
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleEditProduct(product)}
+                                className="text-blue-400 hover:text-blue-600 p-2"
+                                title="Editar produto"
+                              >
+                                <Edit2 size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(product.id)}
+                                className="text-red-400 hover:text-red-600 p-2"
+                                title="Excluir produto"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Controles de Paginação */}
+              <div className="p-4 border-t flex justify-between items-center text-sm text-gray-600">
+                <div>
+                  Mostrando{' '}
+                  <strong>
+                    {Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)}
+                  </strong>{' '}
+                  a{' '}
+                  <strong>
+                    {Math.min(currentPage * itemsPerPage, filteredProducts.length)}
+                  </strong>{' '}
+                  de <strong>{filteredProducts.length}</strong> produtos
+                </div>
+                <div className="flex gap-2 items-center">
+                  <Button
+                    variant="secondary"
+                    className="py-1 px-3 text-sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Anterior
+                  </Button>
+                  <span>Página {currentPage} de {totalPages}</span>
+                  <Button
+                    variant="secondary"
+                    className="py-1 px-3 text-sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Próximo
+                  </Button>
+                </div>
               </div>
             </Card>
           </div>
