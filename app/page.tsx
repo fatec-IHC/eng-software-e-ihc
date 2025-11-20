@@ -191,8 +191,8 @@ export default function SonhoDoceApp() {
       <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-orange-600 p-8 text-center">
-            <div className="mx-auto bg-white w-16 h-16 rounded-full flex items-center justify-center mb-4">
-              <ChefHat className="text-orange-600 w-8 h-8" />
+            <div className="mx-auto w-20 h-20 flex items-center justify-center mb-4">
+              <img src="/logo.jpg" alt="Logo Sonho Doce" className="h-20 w-auto object-contain" />
             </div>
             <h1 className="text-2xl font-bold text-white">Sonho Doce</h1>
             <p className="text-orange-100">Sistema de Gestão</p>
@@ -949,7 +949,7 @@ export default function SonhoDoceApp() {
           <header className="bg-white border-b border-orange-100 h-20 px-6 flex items-center justify-between sticky top-0 z-40 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="bg-orange-100 p-2 rounded-lg">
-                <ChefHat className="text-orange-600 w-6 h-6" />
+                <img src="/logo.jpg" alt="Logo Sonho Doce" className="h-8 w-auto object-contain" />
               </div>
               <div>
                 <h1 className="font-bold text-xl text-gray-800 leading-none">Sonho Doce</h1>
