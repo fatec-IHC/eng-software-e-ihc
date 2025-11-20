@@ -489,9 +489,9 @@ export default function SonhoDoceApp() {
 
             {/* Input de Desconto */}
             <div className="flex gap-2">
-              <input
-                type="password"
-                placeholder="Senha Gerente (1234)"
+              <input 
+                type="password" 
+                placeholder="Senha Gerente (1234)" 
                 className="flex-1 px-3 py-2 text-sm border rounded-lg"
                 value={discountCode}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDiscountCode(e.target.value)}
