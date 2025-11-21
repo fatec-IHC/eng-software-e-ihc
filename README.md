@@ -8,7 +8,6 @@ Sistema completo de ponto de venda (PDV) e gestão desenvolvido com Next.js 16, 
 - ✅ PDV (Ponto de Venda) completo
 - ✅ Busca e filtro de produtos por categoria
 - ✅ Carrinho de compras interativo
-- ✅ Aplicação de desconto (com senha de gerente)
 - ✅ Seleção de método de pagamento (Cartão, Dinheiro, Pix)
 - ✅ Finalização de vendas com atualização automática de estoque
 
@@ -18,79 +17,79 @@ Sistema completo de ponto de venda (PDV) e gestão desenvolvido com Next.js 16, 
 - ✅ Relatório de vendas detalhado
 - ✅ Controle de estoque
 - ✅ Visualização de faturamento
+- ✅ Paginação e filtros na tela de produtos
 
 ## 🚀 Tecnologias
 
-- **Next.js 16** - Framework React
+- **Next.js 16** - Framework React com App Router
 - **TypeScript** - Tipagem estática
 - **Supabase** - Banco de dados e backend
 - **Tailwind CSS** - Estilização
 - **shadcn/ui** - Componentes UI
 - **React Hook Form** - Gerenciamento de formulários
 - **Zod** - Validação de schemas
+- **Lucide React** - Ícones
 
-## 📦 Instalação
+## 📦 Instalação e Configuração
 
 ### Pré-requisitos
 
 - Node.js 18+ ou superior
-- pnpm (ou npm/yarn)
-- Conta no Supabase
+- npm, pnpm ou yarn
+- Conta no Supabase (gratuita)
 
-### Passos
+### Passo 1: Clone o Repositório
 
-1. **Clone o repositório**
+```bash
+git clone https://github.com/fatec-IHC/eng-software-e-ihc.git
+cd eng-software-e-ihc
+```
+
+### Passo 2: Instale as Dependências
+
+```bash
+npm install
+# ou
+pnpm install
+```
+
+### Passo 3: Configure as Variáveis de Ambiente
+
+1. Copie o arquivo de exemplo:
    ```bash
-   git clone <url-do-repositorio>
-   cd eng-software-e-ihc
+   cp env.example.txt .env.local
    ```
 
-2. **Instale as dependências**
-   ```bash
-   pnpm install
-   # ou
-   npm install
-   ```
-
-3. **Configure as variáveis de ambiente**
-   
-   Copie o arquivo `.env.example` para `.env.local`:
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Edite `.env.local` e adicione suas credenciais do Supabase:
+2. Edite `.env.local` e adicione suas credenciais do Supabase:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anon
    ```
 
-4. **Configure o banco de dados**
-   
-   Acesse o SQL Editor no Supabase e execute o script:
-   ```bash
-   scripts/001_create_tables.sql
-   ```
-   
+   **Como obter as credenciais:**
+   - Acesse: https://app.supabase.com/project/_/settings/api
+   - Copie a **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+   - Copie a **anon/public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+### Passo 4: Configure o Banco de Dados
+
+1. Acesse o **SQL Editor** no Supabase Dashboard
+2. Execute o script: `scripts/001_create_tables.sql`
+
    Isso criará as tabelas necessárias:
    - `products` - Produtos
    - `sales` - Vendas
    - `sale_items` - Itens das vendas
 
-5. **Execute o projeto**
-   ```bash
-   pnpm dev
-   # ou
-   npm run dev
-   ```
+### Passo 5: Execute o Projeto
 
-6. **Acesse a aplicação**
-   
-   Abra [http://localhost:3000](http://localhost:3000) no navegador
+```bash
+npm run dev
+# ou
+pnpm dev
+```
 
-## 🚀 Deploy no GitHub Pages
-
-Este projeto está configurado para deploy automático no GitHub Pages. Veja a seção de deploy no README ou consulte a documentação de GitHub Pages para mais detalhes.
+Acesse: [http://localhost:3000](http://localhost:3000)
 
 ## 🔐 Login
 
@@ -99,6 +98,56 @@ Por padrão, o sistema usa autenticação simples:
 - **Perfis disponíveis**: Atendente ou Gerente
 
 > ⚠️ **Importante**: Para produção, implemente autenticação real com Supabase Auth.
+
+## 🚀 Deploy no GitHub Pages
+
+Este projeto está configurado para deploy automático no GitHub Pages.
+
+### Configuração Inicial
+
+#### 1. Adicione os Secrets no GitHub
+
+1. Vá para: `https://github.com/fatec-IHC/eng-software-e-ihc/settings/secrets/actions`
+2. Clique em **"New repository secret"** e adicione:
+
+   **Secret 1:**
+   - Name: `NEXT_PUBLIC_SUPABASE_URL`
+   - Value: Sua URL do Supabase (ex: `https://xxxxx.supabase.co`)
+
+   **Secret 2:**
+   - Name: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Value: Sua chave anon do Supabase
+
+#### 2. Habilite o GitHub Pages
+
+1. Vá para: `https://github.com/fatec-IHC/eng-software-e-ihc/settings/pages`
+2. Em **Source**, selecione: **GitHub Actions**
+3. Clique em **Save**
+
+#### 3. Deploy Automático
+
+O deploy acontece automaticamente quando você faz push para a branch `main`:
+
+```bash
+git push origin main
+```
+
+### Monitoramento do Deploy
+
+- Acompanhe o progresso em: `https://github.com/fatec-IHC/eng-software-e-ihc/actions`
+- O workflow "Deploy to GitHub Pages" será executado automaticamente
+- Aguarde 2-5 minutos para o deploy completar
+
+### URL do Site
+
+Após o deploy, seu site estará disponível em:
+**https://fatec-ihc.github.io/eng-software-e-ihc/**
+
+### Notas Importantes
+
+- **Primeiro deploy**: Pode levar 5-10 minutos
+- **Deploys subsequentes**: Geralmente 2-5 minutos
+- **Base Path**: Todas as URLs são prefixadas com `/eng-software-e-ihc/`
 
 ## 📁 Estrutura do Projeto
 
@@ -113,10 +162,15 @@ eng-software-e-ihc/
 │   └── theme-provider.tsx
 ├── lib/                  # Utilitários e configurações
 │   ├── supabase/        # Clientes Supabase
-│   └── utils.ts         # Funções utilitárias
+│   ├── utils/           # Funções utilitárias
+│   └── validations.ts   # Schemas Zod
 ├── scripts/             # Scripts SQL
 │   └── 001_create_tables.sql
 ├── public/              # Arquivos estáticos
+│   └── logo.jpg        # Logo da aplicação
+├── .github/
+│   └── workflows/
+│       └── deploy.yml  # Workflow de deploy
 └── hooks/              # Custom hooks
 ```
 
@@ -134,7 +188,7 @@ eng-software-e-ihc/
 ### Tabela: `sales`
 - `id` (UUID) - Identificador único
 - `total` (DECIMAL) - Valor total da venda
-- `payment_method` (TEXT) - Método de pagamento
+- `payment_method` (TEXT) - Método de pagamento (Cartão, Dinheiro, Pix)
 - `created_at` (TIMESTAMP) - Data da venda
 
 ### Tabela: `sale_items`
@@ -150,16 +204,19 @@ eng-software-e-ihc/
 
 ```bash
 # Desenvolvimento
-pnpm dev
+npm run dev
 
 # Build para produção
-pnpm build
+npm run build
 
 # Iniciar servidor de produção
-pnpm start
+npm start
 
 # Lint
-pnpm lint
+npm run lint
+
+# Instalar dependências (com fallback para peer deps)
+npm run install-deps
 ```
 
 ## 🔒 Segurança
@@ -170,6 +227,28 @@ pnpm lint
 2. Ajuste as políticas RLS para restringir acesso
 3. Adicione validação de permissões no backend
 4. Use variáveis de ambiente seguras
+5. Não commite arquivos `.env.local` no repositório
+
+## 🐛 Troubleshooting
+
+### Erro: "Missing Supabase environment variables"
+- Verifique se o arquivo `.env.local` existe
+- Confirme que as variáveis estão corretas
+- Reinicie o servidor de desenvolvimento
+
+### Erro: "Build fails" no GitHub Pages
+- Verifique se os secrets estão configurados no GitHub
+- Confirme que `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` estão definidos
+- Veja os logs em: `https://github.com/fatec-IHC/eng-software-e-ihc/actions`
+
+### Assets não carregam (404 errors) no GitHub Pages
+- Verifique se GitHub Pages está configurado para usar "GitHub Actions" como source
+- Confirme que o `basePath` está correto no `next.config.mjs`
+
+### Erro ao conectar com Supabase
+- Verifique se as credenciais estão corretas
+- Confirme que o projeto Supabase está ativo
+- Verifique as políticas RLS no Supabase Dashboard
 
 ## 🚧 Melhorias Futuras
 
@@ -191,6 +270,12 @@ Este projeto foi desenvolvido para fins educacionais.
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
 
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
 ## 📧 Contato
 
 Para dúvidas ou sugestões, abra uma issue no repositório.
@@ -198,4 +283,3 @@ Para dúvidas ou sugestões, abra uma issue no repositório.
 ---
 
 Desenvolvido com ❤️ usando Next.js e Supabase
-
