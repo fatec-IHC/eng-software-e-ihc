@@ -1,10 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBasket, Plus, Minus, Trash2, User, LogOut, Search, Settings, ChefHat, AlertCircle, CheckCircle, Edit2, X } from 'lucide-react';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ShoppingBasket, Plus, Minus, User, LogOut, Search, CheckCircle, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { productSchema, type ProductFormData } from '@/lib/validations';
 import { getAssetPath } from '@/lib/utils/paths';
+import { ROLES } from '@/lib/constants';
 
 type Product = {
   id: string;
@@ -25,7 +27,7 @@ type Sale = {
   payment_method: string
 };
 
-type User = { role: 'gerente' | 'atendente'; name: string };
+import { User } from '@/types';
 
 const CATEGORIES = ['Todos', 'Pães', 'Doces', 'Salgados', 'Bolos', 'Bebidas'];
 
@@ -68,19 +70,30 @@ const Button = ({ children, onClick, variant = 'primary', className = "", disabl
 
 export default function SonhoDoceApp() {
   const supabase = createClient();
+  const router = useRouter();
 
   // Estado Global
   const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [salesHistory, setSalesHistory] = useState<Sale[]>([]);
-  const [view, setView] = useState<'login' | 'pos' | 'admin'>('login');
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'primary' } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        setUser({ ...session.user, profile });
+      }
+    };
+
+    checkUser();
     loadProducts();
-    loadSales();
   }, []);
 
   const loadProducts = async () => {
@@ -100,63 +113,6 @@ export default function SonhoDoceApp() {
     }
   };
 
-  const loadSales = async () => {
-    try {
-      const { data: salesData, error: salesError } = await supabase
-        .from('sales')
-        .select(`
-          id,
-          total,
-          payment_method,
-          created_at,
-          sale_items (
-            id,
-            product_name,
-            product_price,
-            quantity
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (salesError) throw salesError;
-
-      interface SaleItemData {
-        id: string;
-        product_name: string;
-        product_price: number;
-        quantity: number;
-      }
-
-      interface SaleData {
-        id: string;
-        total: number;
-        payment_method: string;
-        created_at: string;
-        sale_items: SaleItemData[];
-      }
-
-      const formattedSales: Sale[] = (salesData || []).map((sale: SaleData) => ({
-        id: sale.id,
-        total: sale.total,
-        payment_method: sale.payment_method,
-        created_at: new Date(sale.created_at).toLocaleString(),
-        items: sale.sale_items.map((item: SaleItemData) => ({
-          id: item.id,
-          name: item.product_name,
-          price: item.product_price,
-          qty: item.quantity,
-          category: '',
-          stock: 0,
-          image: ''
-        }))
-      }));
-
-      setSalesHistory(formattedSales);
-    } catch (error) {
-      console.error('Error loading sales:', error);
-    }
-  };
-
   // Formatação de Moeda
   const formatMoney = (value: number) => {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -168,78 +124,10 @@ export default function SonhoDoceApp() {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // --- LÓGICA DE LOGIN ---
-  const LoginScreen = () => {
-    const [password, setPassword] = useState('');
-    const [selectedRole, setSelectedRole] = useState<'atendente' | 'gerente'>('atendente');
-    const [error, setError] = useState('');
-
-    const handleLogin = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (password === '1234') {
-        const newUser: User = {
-          role: selectedRole,
-          name: selectedRole === 'gerente' ? 'Maria (Gerente)' : 'João (Atendente)'
-        };
-        setUser(newUser);
-        setView(selectedRole === 'gerente' ? 'admin' : 'pos');
-      } else {
-        setError('Senha incorreta. Tente 1234.');
-      }
-    };
-
-    return (
-      <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-orange-600 p-8 text-center">
-            <div className="mx-auto w-32 h-24 flex items-center justify-center mb-4">
-              <img src={getAssetPath('/logo.jpg')} alt="Logo Sonho Doce" className="h- w-auto object-contain rounded-lg border-2" />
-            </div>
-            <p className="text-orange-100 mt-6 text-lg">Sistema de Gestão</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="p-8 space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Selecione o Perfil</label>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole('atendente')}
-                  className={`p-4 border rounded-xl text-center transition-all ${selectedRole === 'atendente' ? 'border-orange-600 bg-orange-50 text-orange-700' : 'border-gray-200 hover:bg-gray-50'}`}
-                >
-                  <User className="w-6 h-6 mx-auto mb-2" />
-                  Atendente
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole('gerente')}
-                  className={`p-4 border rounded-xl text-center transition-all ${selectedRole === 'gerente' ? 'border-orange-600 bg-orange-50 text-orange-700' : 'border-gray-200 hover:bg-gray-50'}`}
-                >
-                  <Settings className="w-6 h-6 mx-auto mb-2" />
-                  Gerente
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Senha de Acesso</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-                placeholder="Digite 1234"
-              />
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-            </div>
-
-            <Button variant="primary" className="w-full py-3 text-lg" type="submit">
-              Entrar no Sistema
-            </Button>
-          </form>
-        </div>
-      </div>
-    );
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+    setUser(null);
   };
 
   // --- LÓGICA DO PDV (Atendente) ---
@@ -349,7 +237,6 @@ export default function SonhoDoceApp() {
 
         // Reload data
         await loadProducts();
-        await loadSales();
 
         setCart([]);
         setDiscountApplied(0);
@@ -555,438 +442,6 @@ export default function SonhoDoceApp() {
     );
   };
 
-  // --- LÓGICA DO ADMIN (Gerente) ---
-  const AdminScreen = () => {
-    const [activeTab, setActiveTab] = useState<'products' | 'sales'>('products');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(5);
-    const [newProduct, setNewProduct] = useState<{ name: string; price: string; stock: string; category: 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas' }>({ name: '', price: '', stock: '', category: 'Pães' });
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
-    const resetForm = () => {
-      setNewProduct({ name: '', price: '', stock: '', category: 'Pães' });
-      setEditingProduct(null);
-      setFormErrors({});
-    };
-
-    const handleAddProduct = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setFormErrors({});
-
-      try {
-        const formData = {
-          name: newProduct.name,
-          price: newProduct.price,
-          stock: newProduct.stock,
-          category: newProduct.category,
-          image: '🍞'
-        };
-
-        const validatedData = productSchema.parse(formData);
-
-        const { error } = await supabase
-          .from('products')
-          .insert({
-            name: validatedData.name,
-            price: validatedData.price,
-            stock: validatedData.stock,
-            category: validatedData.category,
-            image: validatedData.image
-          });
-
-        if (error) throw error;
-
-        await loadProducts();
-        resetForm();
-        showNotification('Produto cadastrado com sucesso!');
-      } catch (error: unknown) {
-        console.error('Error adding product:', error);
-        if (error && typeof error === 'object' && 'errors' in error) {
-          const zodError = error as { errors: Array<{ path: (string | number)[]; message: string }> };
-          const errors: Record<string, string> = {};
-          zodError.errors.forEach((err) => {
-            if (err.path && err.path.length > 0) {
-              errors[err.path[0] as string] = err.message;
-            }
-          });
-          setFormErrors(errors);
-          showNotification('Verifique os campos do formulário', 'error');
-        } else {
-          showNotification('Erro ao cadastrar produto', 'error');
-        }
-      }
-    };
-
-    const handleEditProduct = (product: Product) => {
-      setEditingProduct(product);
-      setNewProduct({
-        name: product.name,
-        price: product.price.toString(),
-        stock: product.stock.toString(),
-        category: product.category as 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas'
-      });
-      setFormErrors({});
-    };
-
-    const handleUpdateProduct = async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!editingProduct) return;
-
-      setFormErrors({});
-
-      try {
-        const formData = {
-          name: newProduct.name,
-          price: newProduct.price,
-          stock: newProduct.stock,
-          category: newProduct.category,
-          image: editingProduct.image || '🍞'
-        };
-
-        const validatedData = productSchema.parse(formData);
-
-        const { error } = await supabase
-          .from('products')
-          .update({
-            name: validatedData.name,
-            price: validatedData.price,
-            stock: validatedData.stock,
-            category: validatedData.category,
-            image: validatedData.image
-          })
-          .eq('id', editingProduct.id);
-
-        if (error) throw error;
-
-        await loadProducts();
-        resetForm();
-        showNotification('Produto atualizado com sucesso!');
-      } catch (error: unknown) {
-        console.error('Error updating product:', error);
-        if (error && typeof error === 'object' && 'errors' in error) {
-          const zodError = error as { errors: Array<{ path: (string | number)[]; message: string }> };
-          const errors: Record<string, string> = {};
-          zodError.errors.forEach((err) => {
-            if (err.path && err.path.length > 0) {
-              errors[err.path[0] as string] = err.message;
-            }
-          });
-          setFormErrors(errors);
-          showNotification('Verifique os campos do formulário', 'error');
-        } else {
-          showNotification('Erro ao atualizar produto', 'error');
-        }
-      }
-    };
-
-    const handleDelete = async (id: string) => {
-      if (!confirm('Tem certeza que deseja excluir este produto?')) return;
-
-      try {
-        const { error } = await supabase
-          .from('products')
-          .delete()
-          .eq('id', id);
-
-        if (error) throw error;
-
-        await loadProducts();
-        showNotification('Produto removido.', 'primary');
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        showNotification('Erro ao remover produto', 'error');
-      }
-    };
-
-    const filteredProducts = products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const paginatedProducts = filteredProducts.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage
-    );
-
-    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
-
-    return (
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-none">
-            <h3 className="text-orange-100 font-medium mb-1">Vendas Hoje</h3>
-            <p className="text-3xl font-bold">{salesHistory.length} pedidos</p>
-          </Card>
-          <Card className="p-6 bg-white">
-            <h3 className="text-gray-500 font-medium mb-1">Faturamento</h3>
-            <p className="text-3xl font-bold text-gray-800">
-              {formatMoney(salesHistory.reduce((acc: number, curr: Sale) => acc + curr.total, 0))}
-            </p>
-          </Card>
-          <Card className="p-6 bg-white">
-            <h3 className="text-gray-500 font-medium mb-1">Produtos Ativos</h3>
-            <p className="text-3xl font-bold text-gray-800">{products.length}</p>
-          </Card>
-        </div>
-
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setActiveTab('products')}
-            className={`px-6 py-2 rounded-full font-medium transition-colors ${activeTab === 'products' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
-          >
-            Gerenciar Produtos
-          </button>
-          <button
-            onClick={() => setActiveTab('sales')}
-            className={`px-6 py-2 rounded-full font-medium transition-colors ${activeTab === 'sales' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
-          >
-            Relatório de Vendas
-          </button>
-        </div>
-
-        {activeTab === 'products' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Form Cadastro/Edição */}
-            <Card className="p-6 h-fit">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-lg flex items-center gap-2">
-                  {editingProduct ? (
-                    <>
-                      <Edit2 size={20} className="text-orange-600" />
-                      Editar Produto
-                    </>
-                  ) : (
-                    <>
-                      <Plus size={20} className="text-orange-600" />
-                      Novo Produto
-                    </>
-                  )}
-                </h3>
-                {editingProduct && (
-                  <button
-                    onClick={resetForm}
-                    className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600"
-                    title="Cancelar edição"
-                  >
-                    <X size={18} />
-                  </button>
-                )}
-              </div>
-              <form onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-                  <input
-                    required
-                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${formErrors.name ? 'border-red-500' : ''
-                      }`}
-                    value={newProduct.name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setNewProduct({ ...newProduct, name: e.target.value });
-                      if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
-                    }}
-                  />
-                  {formErrors.name && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
-                    <input
-                      type="number" step="0.01" required
-                      className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${formErrors.price ? 'border-red-500' : ''
-                        }`}
-                      value={newProduct.price}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        setNewProduct({ ...newProduct, price: e.target.value });
-                        if (formErrors.price) setFormErrors({ ...formErrors, price: '' });
-                      }}
-                    />
-                    {formErrors.price && (
-                      <p className="text-red-500 text-xs mt-1">{formErrors.price}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Estoque</label>
-                    <input
-                      type="number" required
-                      className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${formErrors.stock ? 'border-red-500' : ''
-                        }`}
-                      value={newProduct.stock}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        setNewProduct({ ...newProduct, stock: e.target.value });
-                        if (formErrors.stock) setFormErrors({ ...formErrors, stock: '' });
-                      }}
-                    />
-                    {formErrors.stock && (
-                      <p className="text-red-500 text-xs mt-1">{formErrors.stock}</p>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                  <select
-                    className={`w-full p-2 border rounded-lg bg-white ${formErrors.category ? 'border-red-500' : ''
-                      }`}
-                    value={newProduct.category}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                      setNewProduct({ ...newProduct, category: e.target.value as 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas' });
-                      if (formErrors.category) setFormErrors({ ...formErrors, category: '' });
-                    }}
-                  >
-                    {CATEGORIES.slice(1).map((c: string) => <option key={c}>{c}</option>)}
-                  </select>
-                  {formErrors.category && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.category}</p>
-                  )}
-                </div>
-                <Button className="w-full" type="submit">
-                  {editingProduct ? 'Atualizar Produto' : 'Cadastrar Produto'}
-                </Button>
-              </form>
-            </Card>
-
-            {/* Lista Produtos */}
-            <Card className="lg:col-span-2 overflow-hidden">
-              <div className="p-4 border-b">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Buscar produto por nome..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-orange-500"
-                    value={searchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setSearchTerm(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-gray-50 text-gray-600 border-b">
-                    <tr>
-                      <th className="p-4">Produto</th>
-                      <th className="p-4">Categoria</th>
-                      <th className="p-4">Preço</th>
-                      <th className="p-4">Estoque</th>
-                      <th className="p-4 text-right">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {paginatedProducts.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-gray-400">
-                          Nenhum produto encontrado.
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedProducts.map((product: Product) => (
-                        <tr key={product.id} className="hover:bg-gray-50">
-                          <td className="p-4 font-medium text-gray-800">{product.image} {product.name}</td>
-                          <td className="p-4 text-gray-500"><span className="bg-gray-100 px-2 py-1 rounded text-xs">{product.category}</span></td>
-                          <td className="p-4 text-gray-800 font-medium">{formatMoney(product.price)}</td>
-                          <td className="p-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${product.stock < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                              {product.stock} un
-                            </span>
-                          </td>
-                          <td className="p-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => handleEditProduct(product)}
-                                className="text-blue-400 hover:text-blue-600 p-2"
-                                title="Editar produto"
-                              >
-                                <Edit2 size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(product.id)}
-                                className="text-red-400 hover:text-red-600 p-2"
-                                title="Excluir produto"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Controles de Paginação */}
-              <div className="p-4 border-t flex justify-between items-center text-sm text-gray-600">
-                <div>
-                  Mostrando{' '}
-                  <strong>
-                    {Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)}
-                  </strong>{' '}
-                  a{' '}
-                  <strong>
-                    {Math.min(currentPage * itemsPerPage, filteredProducts.length)}
-                  </strong>{' '}
-                  de <strong>{filteredProducts.length}</strong> produtos
-                </div>
-                <div className="flex gap-2 items-center">
-                  <Button
-                    variant="secondary"
-                    className="py-1 px-3 text-sm"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Anterior
-                  </Button>
-                  <span>Página {currentPage} de {totalPages}</span>
-                  <Button
-                    variant="secondary"
-                    className="py-1 px-3 text-sm"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Próximo
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </div>
-        ) : (
-          <Card>
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600 border-b">
-                <tr>
-                  <th className="p-4">ID Venda</th>
-                  <th className="p-4">Data/Hora</th>
-                  <th className="p-4">Itens</th>
-                  <th className="p-4">Método</th>
-                  <th className="p-4 text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {salesHistory.length === 0 ? (
-                  <tr><td colSpan={5} className="p-8 text-center text-gray-400">Nenhuma venda registrada hoje.</td></tr>
-                ) : (
-                  salesHistory.map((sale: Sale) => (
-                    <tr key={sale.id} className="hover:bg-gray-50">
-                      <td className="p-4 text-gray-500 text-xs">#{sale.id.slice(0, 8)}</td>
-                      <td className="p-4 text-gray-800">{sale.created_at}</td>
-                      <td className="p-4 text-gray-600">{sale.items.map((i: CartItem) => `${i.qty}x ${i.name}`).join(', ')}</td>
-                      <td className="p-4 text-gray-600">{sale.payment_method}</td>
-                      <td className="p-4 text-right font-bold text-green-600">{formatMoney(sale.total)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </Card>
-        )}
-      </div>
-    );
-  };
-
   // --- RENDERIZAÇÃO GERAL ---
   return (
     <div className="min-h-screen bg-gray-100 font-sans text-gray-800">
@@ -1003,8 +458,21 @@ export default function SonhoDoceApp() {
         </div>
       )}
 
-      {view === 'login' ? (
-        <LoginScreen />
+      {!user ? (
+        <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden text-center p-8">
+            <h1 className="text-2xl font-bold mb-4">Bem-vindo ao Sonho Doce</h1>
+            <p className="text-gray-600 mb-8">Faça login para continuar</p>
+            <div className="flex flex-col gap-4">
+              <Link href="/login" className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-all active:scale-95">
+                Login
+              </Link>
+              <Link href="/signup" className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium transition-all active:scale-95">
+                Sign up
+              </Link>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
           {/* Header da Aplicação */}
@@ -1021,25 +489,19 @@ export default function SonhoDoceApp() {
 
             <div className="flex items-center gap-4">
               <div className="text-right hidden md:block">
-                <p className="text-sm font-bold text-gray-800">{user?.name}</p>
-                <p className="text-xs text-orange-600 uppercase font-bold">{user?.role}</p>
+                <p className="text-sm font-bold text-gray-800">{user?.profile?.full_name}</p>
+                <p className="text-xs text-orange-600 uppercase font-bold">{user?.profile?.role}</p>
               </div>
 
-              {user?.role === 'gerente' && (
+              {user?.profile?.role === ROLES.GERENTE && (
                 <div className="bg-gray-100 p-1 rounded-lg flex text-sm font-medium">
-                  <button
-                    onClick={() => setView('pos')}
-                    className={`px-3 py-1.5 rounded-md transition-all ${view === 'pos' ? 'bg-white shadow text-orange-600' : 'text-gray-500'}`}
-                  >PDV</button>
-                  <button
-                    onClick={() => setView('admin')}
-                    className={`px-3 py-1.5 rounded-md transition-all ${view === 'admin' ? 'bg-white shadow text-orange-600' : 'text-gray-500'}`}
-                  >Admin</button>
+                  <Link href="/" className="px-3 py-1.5 rounded-md transition-all bg-white shadow text-orange-600">PDV</Link>
+                  <Link href="/dashboard" className="px-3 py-1.5 rounded-md transition-all text-gray-500">Admin</Link>
                 </div>
               )}
 
               <button
-                onClick={() => { setUser(null); setView('login'); setCart([]); }}
+                onClick={handleSignOut}
                 className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
                 title="Sair"
               >
@@ -1050,7 +512,7 @@ export default function SonhoDoceApp() {
 
           {/* Conteúdo Principal */}
           <main>
-            {view === 'pos' ? <POSScreen /> : <AdminScreen />}
+            <POSScreen />
           </main>
         </>
       )}
