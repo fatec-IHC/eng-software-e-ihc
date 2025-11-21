@@ -32,8 +32,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  console.log('user', user);
-
   const allowedPaths = ['/login', '/signup', '/unauthorized']
 
   if (!user && !allowedPaths.includes(request.nextUrl.pathname)) {

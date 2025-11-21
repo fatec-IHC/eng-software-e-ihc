@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { ShoppingBasket, Plus, Minus, User, LogOut, Search, CheckCircle, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { getAssetPath } from '@/lib/utils/paths';
@@ -71,6 +71,7 @@ const Button = ({ children, onClick, variant = 'primary', className = "", disabl
 export default function SonhoDoceApp() {
   const supabase = createClient();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Estado Global
   const [user, setUser] = useState<User | null>(null);
@@ -495,8 +496,8 @@ export default function SonhoDoceApp() {
 
               {user?.profile?.role === ROLES.GERENTE && (
                 <div className="bg-gray-100 p-1 rounded-lg flex text-sm font-medium">
-                  <Link href="/" className="px-3 py-1.5 rounded-md transition-all bg-white shadow text-orange-600">PDV</Link>
-                  <Link href="/dashboard" className="px-3 py-1.5 rounded-md transition-all text-gray-500">Admin</Link>
+                  <Link href="/" className={`px-3 py-1.5 rounded-md transition-all ${pathname === '/' ? 'bg-white shadow text-orange-600' : 'text-gray-500'}`}>PDV</Link>
+                  <Link href="/dashboard" className={`px-3 py-1.5 rounded-md transition-all ${pathname === '/dashboard' ? 'bg-white shadow text-orange-600' : 'text-gray-500'}`}>Admin</Link>
                 </div>
               )}
 
