@@ -393,8 +393,8 @@ export default function SonhoDoceApp() {
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === cat
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-white text-gray-600 hover:bg-orange-50'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-white text-gray-600 hover:bg-orange-50'
                     }`}
                 >
                   {cat}
@@ -404,7 +404,7 @@ export default function SonhoDoceApp() {
           </Card>
 
           {/* Grid de Produtos */}
-          <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pr-2">
+          <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pr-2 content-start">
             {loading ? (
               <div className="col-span-full text-center py-20 text-gray-400">
                 Carregando produtos...
@@ -419,11 +419,13 @@ export default function SonhoDoceApp() {
                   key={product.id}
                   onClick={() => addToCart(product)}
                   disabled={product.stock === 0}
-                  className={`bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-300 transition-all text-left flex flex-col h-full ${product.stock === 0 ? 'opacity-60 grayscale' : ''}`}
+                  className={`bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-300 transition-all text-left flex flex-col h-56 justify-between ${product.stock === 0 ? 'opacity-60 grayscale' : ''}`}
                 >
-                  <div className="text-4xl mb-3">{product.image}</div>
-                  <h3 className="font-bold text-gray-800 leading-tight">{product.name}</h3>
-                  <div className="mt-auto pt-2 flex justify-between items-end">
+                  <div>
+                    <div className="text-4xl mb-3">{product.image}</div>
+                    <h3 className="font-bold text-gray-800 leading-tight line-clamp-2 min-h-10">{product.name}</h3>
+                  </div>
+                  <div className="pt-2 flex justify-between items-end w-full">
                     <span className="text-orange-600 font-bold text-lg">{formatMoney(product.price)}</span>
                     <span className={`text-xs px-2 py-1 rounded-full ${product.stock < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
                       {product.stock} est
@@ -476,30 +478,11 @@ export default function SonhoDoceApp() {
               <span>Subtotal</span>
               <span>{formatMoney(subtotal)}</span>
             </div>
-            {discountApplied > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
-                <span>Desconto</span>
-                <span>- {formatMoney(discountApplied)}</span>
-              </div>
-            )}
             <div className="flex justify-between text-xl font-bold text-gray-900">
               <span>Total</span>
               <span>{formatMoney(total)}</span>
             </div>
 
-            {/* Input de Desconto */}
-            <div className="flex gap-2">
-              <input 
-                type="password" 
-                placeholder="Senha Gerente (1234)" 
-                className="flex-1 px-3 py-2 text-sm border rounded-lg"
-                value={discountCode}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDiscountCode(e.target.value)}
-              />
-              <button onClick={applyDiscount} className="text-xs px-3 bg-gray-200 rounded-lg hover:bg-gray-300 font-medium text-gray-700">
-                Aplicar %
-              </button>
-            </div>
 
             <Button
               variant="success"
@@ -558,12 +541,15 @@ export default function SonhoDoceApp() {
   // --- LÓGICA DO ADMIN (Gerente) ---
   const AdminScreen = () => {
     const [activeTab, setActiveTab] = useState<'products' | 'sales'>('products');
-    const [newProduct, setNewProduct] = useState<{ name: string; price: string; stock: string; category: 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas' }>({ name: '', price: '', stock: '', category: 'Pães' });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const [newProduct, setNewProduct] = useState<{ name: string; price: string; stock: string; category: 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas'; image: string }>({ name: '', price: '', stock: '', category: 'Pães', image: '' });
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     const resetForm = () => {
-      setNewProduct({ name: '', price: '', stock: '', category: 'Pães' });
+      setNewProduct({ name: '', price: '', stock: '', category: 'Pães', image: '' });
       setEditingProduct(null);
       setFormErrors({});
     };
@@ -578,7 +564,7 @@ export default function SonhoDoceApp() {
           price: newProduct.price,
           stock: newProduct.stock,
           category: newProduct.category,
-          image: '🍞'
+          image: newProduct.image || '🍞'
         };
 
         const validatedData = productSchema.parse(formData);
@@ -622,7 +608,8 @@ export default function SonhoDoceApp() {
         name: product.name,
         price: product.price.toString(),
         stock: product.stock.toString(),
-        category: product.category as 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas'
+        category: product.category as 'Pães' | 'Doces' | 'Salgados' | 'Bolos' | 'Bebidas',
+        image: product.image
       });
       setFormErrors({});
     };
@@ -639,7 +626,7 @@ export default function SonhoDoceApp() {
           price: newProduct.price,
           stock: newProduct.stock,
           category: newProduct.category,
-          image: editingProduct.image || '🍞'
+          image: newProduct.image || '🍞'
         };
 
         const validatedData = productSchema.parse(formData);
@@ -697,10 +684,21 @@ export default function SonhoDoceApp() {
       }
     };
 
+    const filteredProducts = products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const paginatedProducts = filteredProducts.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+
+    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
+
     return (
       <div className="p-6 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-none">
+          <Card className="p-6 bg-linear-to-br from-orange-500 to-orange-600 text-white border-none">
             <h3 className="text-orange-100 font-medium mb-1">Vendas Hoje</h3>
             <p className="text-3xl font-bold">{salesHistory.length} pedidos</p>
           </Card>
@@ -827,6 +825,22 @@ export default function SonhoDoceApp() {
                     <p className="text-red-500 text-xs mt-1">{formErrors.category}</p>
                   )}
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Emoji / Ícone</label>
+                  <div className="flex gap-2">
+                    <input
+                      className="w-20 p-2 border rounded-lg text-center text-2xl focus:ring-2 focus:ring-orange-500 outline-none"
+                      value={newProduct.image}
+                      placeholder="🍞"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setNewProduct({ ...newProduct, image: e.target.value });
+                      }}
+                    />
+                    <div className="flex-1 flex items-center text-sm text-gray-500">
+                      Digite um emoji ou cole aqui para representar o produto.
+                    </div>
+                  </div>
+                </div>
                 <Button className="w-full" type="submit">
                   {editingProduct ? 'Atualizar Produto' : 'Cadastrar Produto'}
                 </Button>
@@ -835,6 +849,21 @@ export default function SonhoDoceApp() {
 
             {/* Lista Produtos */}
             <Card className="lg:col-span-2 overflow-hidden">
+              <div className="p-4 border-b">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Buscar produto por nome..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-orange-500"
+                    value={searchTerm}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-gray-50 text-gray-600 border-b">
@@ -847,38 +876,80 @@ export default function SonhoDoceApp() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {products.map((product: Product) => (
-                      <tr key={product.id} className="hover:bg-gray-50">
-                        <td className="p-4 font-medium text-gray-800">{product.image} {product.name}</td>
-                        <td className="p-4 text-gray-500"><span className="bg-gray-100 px-2 py-1 rounded text-xs">{product.category}</span></td>
-                        <td className="p-4 text-gray-800 font-medium">{formatMoney(product.price)}</td>
-                        <td className="p-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${product.stock < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                            {product.stock} un
-                          </span>
-                        </td>
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleEditProduct(product)}
-                              className="text-blue-400 hover:text-blue-600 p-2"
-                              title="Editar produto"
-                            >
-                              <Edit2 size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(product.id)}
-                              className="text-red-400 hover:text-red-600 p-2"
-                              title="Excluir produto"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                    {paginatedProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-gray-400">
+                          Nenhum produto encontrado.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      paginatedProducts.map((product: Product) => (
+                        <tr key={product.id} className="hover:bg-gray-50">
+                          <td className="p-4 font-medium text-gray-800">{product.image} {product.name}</td>
+                          <td className="p-4 text-gray-500"><span className="bg-gray-100 px-2 py-1 rounded text-xs">{product.category}</span></td>
+                          <td className="p-4 text-gray-800 font-medium">{formatMoney(product.price)}</td>
+                          <td className="p-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${product.stock < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                              {product.stock} un
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleEditProduct(product)}
+                                className="text-blue-400 hover:text-blue-600 p-2"
+                                title="Editar produto"
+                              >
+                                <Edit2 size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(product.id)}
+                                className="text-red-400 hover:text-red-600 p-2"
+                                title="Excluir produto"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Controles de Paginação */}
+              <div className="p-4 border-t flex justify-between items-center text-sm text-gray-600">
+                <div>
+                  Mostrando{' '}
+                  <strong>
+                    {Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)}
+                  </strong>{' '}
+                  a{' '}
+                  <strong>
+                    {Math.min(currentPage * itemsPerPage, filteredProducts.length)}
+                  </strong>{' '}
+                  de <strong>{filteredProducts.length}</strong> produtos
+                </div>
+                <div className="flex gap-2 items-center">
+                  <Button
+                    variant="secondary"
+                    className="py-1 px-3 text-sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Anterior
+                  </Button>
+                  <span>Página {currentPage} de {totalPages}</span>
+                  <Button
+                    variant="secondary"
+                    className="py-1 px-3 text-sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Próximo
+                  </Button>
+                </div>
               </div>
             </Card>
           </div>
@@ -921,9 +992,9 @@ export default function SonhoDoceApp() {
     <div className="min-h-screen bg-gray-100 font-sans text-gray-800">
       {/* Notificação Toast */}
       {notification && (
-        <div className={`fixed top-4 right-4 z-[60] px-6 py-3 rounded-lg shadow-lg transform transition-all animate-bounce ${notification.type === 'error' ? 'bg-red-500 text-white' :
-            notification.type === 'primary' ? 'bg-blue-500 text-white' :
-              'bg-green-500 text-white'
+        <div className={`fixed top-4 right-4 z-60 px-6 py-3 rounded-lg shadow-lg transform transition-all animate-bounce ${notification.type === 'error' ? 'bg-red-500 text-white' :
+          notification.type === 'primary' ? 'bg-blue-500 text-white' :
+            'bg-green-500 text-white'
           }`}>
           <div className="flex items-center gap-2">
             {notification.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
@@ -943,7 +1014,6 @@ export default function SonhoDoceApp() {
                 <img src={getAssetPath('/logo.jpg')} alt="Logo Sonho Doce" className="h-15 w-auto object-contain rounded-lg" />
               </div>
               <div>
-                <h1 className="font-bold text-xl text-gray-800 leading-none">Sonho Doce</h1>
                 <span className="text-xs text-gray-500 font-medium tracking-wider">SISTEMA DE GESTÃO</span>
               </div>
             </div>

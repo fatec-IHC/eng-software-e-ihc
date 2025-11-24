@@ -1,0 +1,13 @@
+
+> my-v0-project@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.3 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1202ms
+ ○ Compiling / ...
+ GET / 200 in 7.2s (compile: 6.4s, render: 818ms)
